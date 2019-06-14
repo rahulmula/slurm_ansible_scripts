@@ -193,7 +193,7 @@
   #     dest: /etc/slurm/slurm.conf
   #     state: present
   #     regexp: '^#ControlAddr='
-  #     line: 'ControlAddr='
+  #     line: 'ControlAddr=10.130.161.98'
   #   become: yes
   #   become_method: sudo
   #
@@ -233,16 +233,33 @@
   #   become: yes
   #   become_method: sudo
 
+
+  - name: copy the cookie
+    shell: "cat nodeinfo.properties"
+    register: nodeinfo
+    delegate_to: 127.0.0.1
+    become: yes
+    become_method: sudo
+
   - name: Adding configuration
     lineinfile:
       dest: /etc/slurm/slurm.conf
-      #state: present
+      state: present
       regexp: '^NodeName=linux1 Gres=gpu:8 CPUs=80 Sockets=2 CoresPerSocket=20 ThreadsPerCore=2 RealMemory=515896 State=UNKNOWN'
-      line: cat nodeinfo.properties
-      insertbefore: '^PartitionName=debug Nodes=ALL'
-      #with_lines: cat nodeinfo.properties
+      line: "{{ nodeinfo.stdout }}"
+      insertbefore: '^PartitionName=debug State=UP PreemptMode=REQUEUE Priority=10000 Shared=FORCE:1'      
     become: yes
     become_method: sudo
+
+   
+  - name: Ensure group "somegroup" exists
+    command: "{{ item }}"
+    with_items:
+       - "groupmod -g 992 slurm"
+       - "usermod slurm --gid 992 --uid 995"
+    become: yes
+    become_method: sudo
+
 
 
   #  - name: install required
