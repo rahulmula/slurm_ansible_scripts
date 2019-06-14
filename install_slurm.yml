@@ -188,57 +188,57 @@
   #   become: yes
   #   become_method: sudo
 
-  - name: Adding configuration
-    lineinfile:
-      dest: /etc/slurm/slurm.conf
-      state: present
-      regexp: '^#ControlAddr='
-      line: 'ControlAddr='
-    become: yes
-    become_method: sudo
-
-  - name: Adding configuration
-    lineinfile:
-      dest: /etc/slurm/slurm.conf
-      state: present
-      regexp: '^SelectType=select/cons_res'
-      line: 'SelectType=select/linear'
-    become: yes
-    become_method: sudo
-
-  - name: Adding configuration
-    lineinfile:
-      dest: /etc/slurm/slurm.conf
-      state: present
-      regexp: '^SelectTypeParameters=CR_Core_Memory,CR_CORE_DEFAULT_DIST_BLOCK,CR_ONE_TASK_PER_CORE'
-      line: 'SelectTypeParameters=CR_CORE_DEFAULT_DIST_BLOCK,CR_ONE_TASK_PER_CORE'
-    become: yes
-    become_method: sudo
-
-  - name: Adding configuration
-    lineinfile:
-      dest: /etc/slurm/slurm.conf
-      state: present
-      regexp: '^FastSchedule=1'
-      line: 'FastSchedule=2'
-    become: yes
-    become_method: sudo
-
-  - name: Adding configuration
-    lineinfile:
-      dest: /etc/slurm/slurm.conf
-      state: present
-      regexp: '^PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP'
-      line: 'PartitionName=debug State=UP PreemptMode=REQUEUE Priority=10000 Shared=FORCE:1'
-    become: yes
-    become_method: sudo
+  # - name: Adding configuration
+  #   lineinfile:
+  #     dest: /etc/slurm/slurm.conf
+  #     state: present
+  #     regexp: '^#ControlAddr='
+  #     line: 'ControlAddr='
+  #   become: yes
+  #   become_method: sudo
+  #
+  # - name: Adding configuration
+  #   lineinfile:
+  #     dest: /etc/slurm/slurm.conf
+  #     state: present
+  #     regexp: '^SelectType=select/cons_res'
+  #     line: 'SelectType=select/linear'
+  #   become: yes
+  #   become_method: sudo
+  #
+  # - name: Adding configuration
+  #   lineinfile:
+  #     dest: /etc/slurm/slurm.conf
+  #     state: present
+  #     regexp: '^SelectTypeParameters=CR_Core_Memory,CR_CORE_DEFAULT_DIST_BLOCK,CR_ONE_TASK_PER_CORE'
+  #     line: 'SelectTypeParameters=CR_CORE_DEFAULT_DIST_BLOCK,CR_ONE_TASK_PER_CORE'
+  #   become: yes
+  #   become_method: sudo
+  #
+  # - name: Adding configuration
+  #   lineinfile:
+  #     dest: /etc/slurm/slurm.conf
+  #     state: present
+  #     regexp: '^FastSchedule=1'
+  #     line: 'FastSchedule=2'
+  #   become: yes
+  #   become_method: sudo
+  #
+  # - name: Adding configuration
+  #   lineinfile:
+  #     dest: /etc/slurm/slurm.conf
+  #     state: present
+  #     regexp: '^PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP'
+  #     line: 'PartitionName=debug State=UP PreemptMode=REQUEUE Priority=10000 Shared=FORCE:1'
+  #   become: yes
+  #   become_method: sudo
 
   - name: Adding configuration
     lineinfile:
       dest: /etc/slurm/slurm.conf
       #state: present
       regexp: '^NodeName=linux1 Gres=gpu:8 CPUs=80 Sockets=2 CoresPerSocket=20 ThreadsPerCore=2 RealMemory=515896 State=UNKNOWN'
-      line: cat nodeinfo.properties 
+      line: cat nodeinfo.properties
       insertbefore: '^PartitionName=debug Nodes=ALL'
       #with_lines: cat nodeinfo.properties
     become: yes
