@@ -1,6 +1,10 @@
 ---
 - hosts: slurm_client
-  #become: true
+    hosts1:10.130.166.144
+  #vars:    
+  #ansible_ssh_user='ansible'
+  #ansible_ssh_pass='AH64_uh1'
+  #ansible_connection=ssh
 
   vars_files:
     - ./vars.yml
@@ -17,7 +21,8 @@
     apt:
       name: "{{ pre_req_softwares }}"
       state: present
-
+    become: yes
+    become_method: sudo
 
   - name: change munge folder as insecure
     file:
@@ -58,19 +63,22 @@
     service:
           name: munge
           state: started
-          ignore_errors: yes
+    ignore_errors: yes
     become: yes
     become_method: sudo
 
 
   - name: create storage directory
     command: bash -lc "mkdir /storage"
+    ignore_errors: yes
     become: yes
     become_method: sudo
 
 
   - name: change to storage directory and git clone
-    command: bash -lc "cd /storage && git clone https://github.com/mknoxnv/ubuntu-slurm.git"
+    command: "git clone https://github.com/mknoxnv/ubuntu-slurm.git"
+    args:
+      chdir: /storage
     become: yes
     become_method: sudo
 
