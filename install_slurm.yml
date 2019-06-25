@@ -1,7 +1,7 @@
 ---
 - hosts: slurm_client
     hosts1:10.130.166.144
-  #vars:    
+  #vars:
   #ansible_ssh_user='ansible'
   #ansible_ssh_pass='AH64_uh1'
   #ansible_connection=ssh
@@ -11,84 +11,84 @@
 
   tasks:
 
-  - name: Run the equivalent of "apt-get update" as a separate step
-    apt:
-      update_cache: yes
-    become: yes
-    become_method: sudo
-
-  - name: Ensure required softwares are installed
-    apt:
-      name: "{{ pre_req_softwares }}"
-      state: present
-    become: yes
-    become_method: sudo
-
-  - name: change munge folder as insecure
-    file:
-      path: /etc/munge/
-      owner: "{{ superuser }}"
-      group: "{{ superuser }}"
-    become: yes
-    become_method: sudo
-
-
-  - name: delete newly installed munge key
-    file:
-      path: /etc/munge/munge.key
-      state: absent
-    become: yes
-    become_method: sudo
-
-  - name: copy munge key file to host
-    copy:
-      src: files/etc/munge/munge.key
-      dest: /etc/munge/munge.key
-      owner: munge
-      group: munge
-      mode: 0400
-    become: yes
-    become_method: sudo
-
-
-  - name: enable munge service
-    service:
-          name: munge
-          enabled: yes
-    become: yes
-    become_method: sudo
-
-
-  - name: start munge service
-    service:
-          name: munge
-          state: started
-    ignore_errors: yes
-    become: yes
-    become_method: sudo
-
-
-  - name: create storage directory
-    command: bash -lc "mkdir /storage"
-    ignore_errors: yes
-    become: yes
-    become_method: sudo
-
-
-  - name: change to storage directory and git clone
-    command: "git clone https://github.com/mknoxnv/ubuntu-slurm.git"
-    args:
-      chdir: /storage
-    become: yes
-    become_method: sudo
-
-
-  - name: install required tools
-    apt:
-      name: "{{ tools }}"
-      state: present
-    become: yes
-    become_method: sudo
+  # - name: Run the equivalent of "apt-get update" as a separate step
+  #   apt:
+  #     update_cache: yes
+  #   become: yes
+  #   become_method: sudo
+  #
+  # - name: Ensure required softwares are installed
+  #   apt:
+  #     name: "{{ pre_req_softwares }}"
+  #     state: present
+  #   become: yes
+  #   become_method: sudo
+  #
+  # - name: change munge folder as insecure
+  #   file:
+  #     path: /etc/munge/
+  #     owner: "{{ superuser }}"
+  #     group: "{{ superuser }}"
+  #   become: yes
+  #   become_method: sudo
+  #
+  #
+  # - name: delete newly installed munge key
+  #   file:
+  #     path: /etc/munge/munge.key
+  #     state: absent
+  #   become: yes
+  #   become_method: sudo
+  #
+  # - name: copy munge key file to host
+  #   copy:
+  #     src: files/etc/munge/munge.key
+  #     dest: /etc/munge/munge.key
+  #     owner: munge
+  #     group: munge
+  #     mode: 0400
+  #   become: yes
+  #   become_method: sudo
+  #
+  #
+  # - name: enable munge service
+  #   service:
+  #         name: munge
+  #         enabled: yes
+  #   become: yes
+  #   become_method: sudo
+  #
+  #
+  # - name: start munge service
+  #   service:
+  #         name: munge
+  #         state: started
+  #   ignore_errors: yes
+  #   become: yes
+  #   become_method: sudo
+  #
+  #
+  # - name: create storage directory
+  #   command: bash -lc "mkdir /storage"
+  #   ignore_errors: yes
+  #   become: yes
+  #   become_method: sudo
+  #
+  #
+  # - name: change to storage directory and git clone
+  #   command: "git clone https://github.com/mknoxnv/ubuntu-slurm.git"
+  #   args:
+  #     chdir: /storage
+  #   become: yes
+  #   become_method: sudo
+  #
+  #
+  # - name: install required tools
+  #   apt:
+  #     name: "{{ tools }}"
+  #     state: present
+  #   become: yes
+  #   become_method: sudo
 
 
   - name: start slurm installation process
