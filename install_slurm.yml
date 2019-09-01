@@ -275,6 +275,8 @@
       path: /etc/slurm/slurm.conf
       state: absent
       regexp: '^UpTime'
+    become: yes
+    become_method: sudo
 
   - name: start slurmd service
     service:
