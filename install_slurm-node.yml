@@ -11,7 +11,7 @@
 
   tasks:
 
-  - name: Run the equivalent of "apt-get update" as a separate step
+  - name: Run the equivalent of apt-get update as a separate step
     apt:
       update_cache: yes
     become: yes
@@ -79,6 +79,7 @@
     command: "git clone https://github.com/mknoxnv/ubuntu-slurm.git"
     args:
       chdir: /storage
+    ignore_errors: yes
     become: yes
     become_method: sudo
 
@@ -96,8 +97,11 @@
     args:
       chdir: "/storage"
     with_items:
+           
        - "wget https://download.schedmd.com/slurm/slurm-17.11.12.tar.bz2"
-       - "tar xvjf slurm-17.11.12.tar.bz2"
+       - "sudo tar xvjf slurm-17.11.12.tar.bz2"
+         #- "wget http://10.130.166.180:8081/artifactory/slurm_amd_plgn_package/amd-plugin-mike-wip-v1.tar.gz"
+         #- "tar xvzf amd-plugin-mike-wip-v1.tar.gz"
     become: yes
     become_method: sudo
 
@@ -105,7 +109,7 @@
   - name: building slurm
     command: "{{ item }}"
     args:
-      chdir: "/storage/slurm-17.11.12"
+      chdir: "/storage/{{ slurm_version }}"
     with_items:
        - "./configure --prefix=/tmp/slurm-build --sysconfdir=/etc/slurm --enable-pam --with-pam_dir=/lib/x86_64-linux-gnu/security/ --without-shared-libslurm"
        - "make"
@@ -126,8 +130,8 @@
     args:
       chdir: "/storage"
     with_items:
-       - "fpm -s dir -t deb -v 1.0 -n slurm-17.11.12 --prefix=/usr -C /tmp/slurm-build ."
-       - "dpkg -i slurm-17.11.12_1.0_amd64.deb"
+       - "fpm -s dir -t deb -v 1.0 -n {{ slurm_version }} --prefix=/usr -C /tmp/slurm-build ."
+       - "dpkg -i {{ slurm_version }}_1.0_amd64.deb"
        - "mkdir /etc/slurm"
     become: yes
     become_method: sudo
@@ -160,6 +164,7 @@
     with_items:
        - "groupadd -g 992 slurm"
        - "useradd slurm --gid 992 --uid 995"
+    ignore_errors: yes
     become: yes
     become_method: sudo
 
