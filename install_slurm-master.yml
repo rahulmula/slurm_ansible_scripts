@@ -1,0 +1,122 @@
+---
+- hosts: slurm_master
+    hosts1:10.130.166.205
+  #vars:
+  #ansible_ssh_user='ansible'
+  #ansible_ssh_pass='AH64_uh1'
+  #ansible_connection=ssh
+
+  vars_files:
+    - ./vars.yml
+
+  tasks:
+
+  - name: Run the equivalent of "apt-get update" as a separate step
+    apt:
+      update_cache: yes
+    become: yes
+    become_method: sudo
+
+  - name: Ensure required softwares are installed
+    apt:
+      name: "{{ pre_req_softwares }}"
+      state: present
+    become: yes
+    become_method: sudo
+
+  - name: install fpm
+    command: bash -lc "gem install fpm"
+    become: yes
+    become_method: sudo
+
+  - name: install required tools
+    apt:
+      name: "{{ tools }}"
+      state: present
+    become: yes
+    become_method: sudo
+
+  - name: enable munge service
+    service:
+          name: munge
+          enabled: yes
+    become: yes
+    become_method: sudo
+
+  - name: start munge service
+    service:
+          name: munge
+          state: started
+    ignore_errors: yes
+    become: yes
+    become_method: sudo
+
+#### Install Slurmdbd
+
+  - name: install required tools
+    apt:
+      name: mariadb-server
+      state: present
+    become: yes
+    become_method: sudo
+
+  - name: enable mysql service
+    service:
+          name: mysql
+          enabled: yes
+    become: yes
+    become_method: sudo
+
+  - name: start mysql service
+    service:
+          name: mysql
+          state: started
+    ignore_errors: yes
+    become: yes
+    become_method: sudo
+
+  - name: wait for mysql in port 3306 to start
+    wait_for: port=3306 delay=10 timeout=60
+
+  - name: Set root sql user password
+    # If .my.cnf already exists, this will cause an mysql-root-password update.
+    # check_implicit_admin means it tries without password first
+    mysql_user:
+      name: root
+      password: "{{ DB_root_password}}"
+      check_implicit_admin: true
+      host: "{{ item }}"
+    with_items:
+       - "::1"
+       - "127.0.0.1"
+       - "localhost"
+
+  - name: Set root sql user password check mode
+    mysql_user:
+      name: root
+      password: "{{ DB_root_password}}"
+      check_implicit_admin: false
+      host: "{{ item }}"
+    with_items:
+       - "::1"
+       - "127.0.0.1"
+       - "localhost"
+
+  - name: create slurm acct db
+    mysql_db: name=slurm_acct_db state=present
+
+  - name: create slurm sql user
+    mysql_user:
+     name: slurm
+     state: present
+     password: "{{ slurm_mysql_password }}"
+    register: mysqlslurmuser
+    ignore_errors: yes
+
+  - name: ensure slurm sql user has a password and privileges if it does not exist or if it was just added
+    mysql_user:
+     name: slurm
+     password: "{{ slurm_mysql_password }}"
+     priv: "slurm_acct_db.*:ALL"
+     state: present
+     update_password: always
