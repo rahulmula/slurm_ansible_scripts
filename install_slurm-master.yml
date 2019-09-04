@@ -1,6 +1,6 @@
 ---
-- hosts: slurm_master
-    hosts1:10.130.166.205
+- hosts: slurm_node
+  #hosts1:10.130.166.205
   #vars:
   #ansible_ssh_user='ansible'
   #ansible_ssh_pass='AH64_uh1'
@@ -24,15 +24,20 @@
     become: yes
     become_method: sudo
 
-  - name: install fpm
-    command: bash -lc "gem install fpm"
-    become: yes
-    become_method: sudo
+    #- name: install fpm
+    #command: bash -lc "gem install fpm"
+    #become: yes
+    #become_method: sudo
 
   - name: install required tools
     apt:
       name: "{{ tools }}"
       state: present
+    become: yes
+    become_method: sudo
+
+  - name: install fpm
+    command: bash -lc "gem install fpm"
     become: yes
     become_method: sudo
 
@@ -52,6 +57,20 @@
     become_method: sudo
 
 #### Install Slurmdbd
+  
+  - name: install python module pip
+    apt: 
+      name: python3-pip
+      state: present
+    become: yes
+    become_method: sudo 
+
+  - name: install PyMySQL
+    pip:
+      name: PyMySQL
+      state: present
+    become: yes
+    become_method: sudo   
 
   - name: install required tools
     apt:

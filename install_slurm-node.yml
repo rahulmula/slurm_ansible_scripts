@@ -42,7 +42,7 @@
 
   - name: copy munge key file to host
     copy:
-      src: files/etc/munge/munge.key
+      src: files/etc/munge/munge-new.key
       dest: /etc/munge/munge.key
       owner: munge
       group: munge
@@ -98,10 +98,10 @@
       chdir: "/storage"
     with_items:
            
-       - "wget https://download.schedmd.com/slurm/slurm-17.11.12.tar.bz2"
-       - "sudo tar xvjf slurm-17.11.12.tar.bz2"
-         #- "wget http://10.130.166.180:8081/artifactory/slurm_amd_plgn_package/amd-plugin-mike-wip-v1.tar.gz"
-         #- "tar xvzf amd-plugin-mike-wip-v1.tar.gz"
+            #- "wget https://download.schedmd.com/slurm/{{ slurm_version }}.tar.bz2"
+            #- "sudo tar xvjf {{ slurm_version }}.tar.bz2"
+       - "wget http://10.130.166.180:8081/artifactory/slurm_amd_plgn_package/amd-plugin-mike-wip-v1.tar.gz"
+       - "tar xvzf amd-plugin-mike-wip-v1.tar.gz"
     become: yes
     become_method: sudo
 
@@ -111,7 +111,7 @@
     args:
       chdir: "/storage/{{ slurm_version }}"
     with_items:
-       - "./configure --prefix=/tmp/slurm-build --sysconfdir=/etc/slurm --enable-pam --with-pam_dir=/lib/x86_64-linux-gnu/security/ --without-shared-libslurm"
+       - "./configure --prefix=/tmp/slurm-build --sysconfdir=/etc/slurm --enable-pam --with-pam_dir=/lib/x86_64-linux-gnu/security/ --without-shared-libslurm --with-rsmi"
        - "make"
        - "make contrib"
        - "make install"
@@ -173,6 +173,7 @@
     copy:
        src: /storage/ubuntu-slurm/slurmd.service
        dest: /etc/systemd/system
+       remote_src: yes
     become: yes
     become_method: sudo
 
@@ -217,7 +218,7 @@
       dest: /etc/slurm/slurm.conf
       state: present
       regexp: '^#ControlAddr='
-      line: 'ControlAddr=10.130.161.164'
+      line: 'ControlAddr=10.130.162.87'
     become: yes
     become_method: sudo
 
@@ -226,8 +227,8 @@
       dest: /etc/slurm/slurm.conf
       state: present
       regexp: '^ControlMachine='
-      line: 'ControlMachine=taccuser-desktop'
-    become: yes
+      line: 'ControlMachine=slurm-master'
+    become: yes 
     become_method: sudo
 
   - name: Adding configuration
