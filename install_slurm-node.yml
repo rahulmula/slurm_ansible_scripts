@@ -111,6 +111,7 @@
     args:
       chdir: "/storage/{{ slurm_version }}"
     with_items:
+       - "make clean"
        - "./configure --prefix=/tmp/slurm-build --sysconfdir=/etc/slurm --enable-pam --with-pam_dir=/lib/x86_64-linux-gnu/security/ --without-shared-libslurm --with-rsmi"
        - "make"
        - "make contrib"
@@ -330,7 +331,14 @@
       insertbefore: '^PartitionName=debug State=UP PreemptMode=REQUEUE Priority=10000 Shared=FORCE:1'
     become: yes
     become_method: sudo
-
+  
+  - name: Make sure "Uptime" not in slurm configuration
+    lineinfile:
+      path: /etc/slurm/slurm.conf
+      state: absent
+      regexp: '^UpTime'
+    become: yes
+    become_method: sudo
 
   - name: start slurmd service
     service:

@@ -12,8 +12,15 @@
   tasks:
 
 
-  - name: uninstall slurm version: {{ slurm_version }}
-    command: "apt-get purge --auto-remove {{ slurm_version }}"
+          #  - name: uninstall slurm version
+          #    command: "apt-get purge --auto-remove {{ slurm_version }}"
+          #    become: yes
+          #    become_method: sudo
+
+  - name: uninstall slurm version
+    apt:
+      name: "{{ slurm_version }}"
+      state: absent
     become: yes
     become_method: sudo
 

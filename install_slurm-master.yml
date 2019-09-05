@@ -60,15 +60,26 @@
   
   - name: install python module pip
     apt: 
-      name: python3-pip
-      state: present
+      name:
+        - python3  
+        - python3-pip
+        - python3-setuptools
+        - python-pymysql
+        - python3-pymysql
+        - python-apt
+        - python3-apt
+      state: latest    
     become: yes
     become_method: sudo 
 
   - name: install PyMySQL
-    pip:
-      name: PyMySQL
-      state: present
+    #pip:
+    # name: pymysql
+    # state: present
+    command: "{{ item }}"
+    with_items:
+       - pip3 install pymysql
+         #- pip install pymysql
     become: yes
     become_method: sudo   
 
@@ -97,32 +108,86 @@
   - name: wait for mysql in port 3306 to start
     wait_for: port=3306 delay=10 timeout=60
 
-  - name: Set root sql user password
+    #- name: Set root sql user password
     # If .my.cnf already exists, this will cause an mysql-root-password update.
     # check_implicit_admin means it tries without password first
-    mysql_user:
-      name: root
-      password: "{{ DB_root_password}}"
-      check_implicit_admin: true
-      host: "{{ item }}"
-    with_items:
-       - "::1"
-       - "127.0.0.1"
-       - "localhost"
+    #mysql_user:
+    #name: root
+    #password: "{{ DB_root_password}}"
+    #check_implicit_admin: true
+    #host: "{{ item }}"
+    #with_items:
+    #- "::1"
+    #- "127.0.0.1"
+    #- "localhost"
+    #become: yes
+    #become_method: sudo
+  
+  - name: template .my.cnf
+    template:
+     src: "my.cnf.j2"
+     dest: "/root/my.cnf"
+     owner: root
+     group: root
+     mode: 0600
+    become: yes
+    become_method: sudo  
+     #when: slurm_manage_mysql_security|bool
 
-  - name: Set root sql user password check mode
-    mysql_user:
-      name: root
-      password: "{{ DB_root_password}}"
-      check_implicit_admin: false
-      host: "{{ item }}"
-    with_items:
-       - "::1"
-       - "127.0.0.1"
-       - "localhost"
+     #- name: set root sql user password in check mode
+     #mysql_user: 
+     #name: root
+     #host: "127.0.0.1"
+     #password: "{{ DB_root_password }}"
+     #check_implicit_admin: true
+     #login_user: "root" 
+     #login_password: "{{ DB_root_password }}"
+      #priv: "{{ mysql_user_db_name }}.*:ALL"
+      #state: present
+      #login_unix_socket: "/var/lib/mysql/mysql.sock"
+      #become: yes
+      #become_method: sudo
+
+    #- name: Set root sql user password check mode
+    #mysql_user:
+    #name: root
+    #password: "{{ DB_root_password}}"
+    #check_implicit_admin: false
+    #host: "{{ item }}"
+    #login_user: root
+    #login_password: "root"
+    #with_items:
+    #- "::1"
+    #- "127.0.0.1"
+    #- "localhost"
+    #become: yes
+    #become_user: root
+    #when: slurm_manage_mysql_security|bool and not ansible_check_mode
+
+
+    #- name: Set user privileges to root user
+    #mysql_user:
+    #user: 'root'
+    #host: 'localhost'
+    #password: "{{ DB_root_password}}"
+    #state: present
+    #append_privs: yes
+    #priv: '*.*:ALL,GRANT'
+    #become: yes
+    #become_method: sudo
+  
+
+  - name: grant full privileges to root user
+    shell: sudo mysql -h localhost -u root -proot -e "GRANT ALL ON *.* to root@localhost IDENTIFIED BY 'root'"
+    become: yes
+    become_method: sudo
+
 
   - name: create slurm acct db
     mysql_db: name=slurm_acct_db state=present
+    become: yes
+    become_method: sudo 
+
 
   - name: create slurm sql user
     mysql_user:
