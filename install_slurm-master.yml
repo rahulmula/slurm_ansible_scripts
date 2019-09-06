@@ -178,29 +178,37 @@
   
 
   - name: grant full privileges to root user
-    shell: sudo mysql -h localhost -u root -proot -e "GRANT ALL ON *.* to root@localhost IDENTIFIED BY 'root'"
+    shell: sudo mysql -h localhost -u root -proot -e "{{ item }}"
+    with_items: 
+       - "GRANT ALL ON *.* to root@localhost IDENTIFIED BY 'root'"
+       - "create database slurm_acct_db"
+       - "create user 'slurm'@'localhost'"
+       - "set password for 'slurm'@'localhost' = password('slurmdbpass')"
+       - "grant usage on *.* to 'slurm'@'localhost'"
+       - "grant all privileges on slurm_acct_db.* to 'slurm'@'localhost'"
+       - "flush privileges" 
     become: yes
     become_method: sudo
 
 
-  - name: create slurm acct db
-    mysql_db: name=slurm_acct_db state=present
-    become: yes
-    become_method: sudo 
+    #- name: create slurm acct db
+    #mysql_db: name=slurm_acct_db state=present
+    #become: yes
+    #become_method: sudo 
 
 
-  - name: create slurm sql user
-    mysql_user:
-     name: slurm
-     state: present
-     password: "{{ slurm_mysql_password }}"
-    register: mysqlslurmuser
-    ignore_errors: yes
+    #- name: create slurm sql user
+    #mysql_user:
+    #name: slurm
+    #state: present
+    #password: "{{ slurm_mysql_password }}"
+    #register: mysqlslurmuser
+    #ignore_errors: yes
 
-  - name: ensure slurm sql user has a password and privileges if it does not exist or if it was just added
-    mysql_user:
-     name: slurm
-     password: "{{ slurm_mysql_password }}"
-     priv: "slurm_acct_db.*:ALL"
-     state: present
-     update_password: always
+    #- name: ensure slurm sql user has a password and privileges if it does not exist or if it was just added
+    #mysql_user:
+    #name: slurm
+    #password: "{{ slurm_mysql_password }}"
+    #priv: "slurm_acct_db.*:ALL"
+    #state: present
+    #update_password: always
