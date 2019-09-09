@@ -103,20 +103,20 @@
   - name: wait for mysql in port 3306 to start
     wait_for: port=3306 delay=10 timeout=60
 
-  - name: template .my.cnf
-    template:
-     src: "my.cnf.j2"
-     dest: "/root/my.cnf"
-     owner: root
-     group: root
-     mode: 0600
-    become: yes
-    become_method: sudo
+    #- name: template .my.cnf
+    #template:
+    #src: "my.cnf.j2"
+    #dest: "/root/my.cnf"
+    #owner: root
+    #group: root
+    #mode: 0600
+    #become: yes
+    #become_method: sudo
      #when: slurm_manage_mysql_security|bool
 
 
   - name: grant full privileges to root user
-    shell: sudo mysql -h localhost -u root -proot -e "{{ item }}"
+    shell: mysql -h localhost -u root -proot -e "{{ item }}"
     with_items:
        - "GRANT ALL ON *.* to root@localhost IDENTIFIED BY 'root'"
        - "create database slurm_acct_db"
@@ -192,7 +192,7 @@
     become_method: sudo
 
 
-  - name: Ensure group "somegroup" exists
+  - name: Add slurm user and group
     command: "{{ item }}"
     with_items:
        - "groupadd -g 992 slurm"
@@ -214,6 +214,8 @@
   - name: slurm initialization
     command: "{{ item }}"
     with_items:
+       - "cp /storage/ubuntu-slurm/slurmdbd.service /etc/systemd/system/"
+       - "cp /storage/ubuntu-slurm/slurmctld.service /etc/systemd/system/"
        - "cp /storage/ubuntu-slurm/slurm.conf /etc/slurm/"
        - "cp /storage/ubuntu-slurm/slurmdbd.conf /etc/slurm/"
        - "cp /storage/ubuntu-slurm/gres.conf /etc/slurm/gres.conf"
@@ -223,27 +225,27 @@
     become_method: sudo
 
   - name: reload_daemon
-    systemctl:
+    systemd:
       daemon_reload: yes
     become: yes
     become_method: sudo
 
   - name: enable service slurmdbd
-    systemctl:
+    systemd:
       name: slurmdbd
       enabled: yes
     become: yes
     become_method: sudo
 
   - name: start service slurmdbd
-    systemctl:
+    systemd:
       state: started
       name: slurmdbd
     become: yes
     become_method: sudo
 
   - name: enable service slurmctld
-    systemctl:
+    systemd:
       name: slurmctld
       enabled: yes
     become: yes
@@ -253,7 +255,7 @@
     command: "{{ item }}"
     with_items:
        - "sacctmgr add cluster compute-cluster"
-       - "sacctmgr add account compute-account description="Compute accounts" Organization=OurOrg "
+       - "sacctmgr add account compute-account description='Compute accounts' Organization=OurOrg"
        - "sacctmgr create user myuser account=compute-account adminlevel=None"
     become: yes
     become_method: sudo
@@ -295,7 +297,7 @@
     become_method: sudo
 
   - name: start service slurmctld
-    systemctl:
+    systemd:
       name: slurmctld
       state: started
     become: yes
